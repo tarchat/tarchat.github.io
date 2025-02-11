@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>tChat: decentralized FOSS chat</title>
+  <title>tarchat: decentralized FOSS chat</title>
   <style>
     /* Terminal look styling */
     body {
@@ -54,8 +54,14 @@
     }
   </style>
   <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-FC4WPSN2CG"></script>
-  <script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-FC4WPSN2CG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-FC4WPSN2CG');
+</script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
