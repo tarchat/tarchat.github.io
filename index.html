@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Terminal Chat with Gun.js</title>
+  <style>
+    /* Terminal look styling */
+    body {
+      background-color: #000;
+      color: #00ff00;
+      font-family: 'Courier New', Courier, monospace;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    #chat {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    #input-area {
+      border-top: 1px solid #00ff00;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+    }
+    #input-area span {
+      margin-right: 5px;
+    }
+    #input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #00ff00;
+      font-size: 16px;
+    }
+  </style>
+  <!-- Include Gun.js from a CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+</head>
+<body>
+  <div id="chat"></div>
+  <div id="input-area">
+    <span>&gt;</span>
+    <input type="text" id="input" autocomplete="off" placeholder="Type a message...">
+  </div>
+
+  <script>
+    // Initialize Gun; by default it connects to public relay peers.
+    var gun = Gun();
+
+    // Create/get a Gun node for our chat room.
+    var messages = gun.get('chat-room');
+
+    // Ask for a nickname; store it in localStorage so users don’t need to reenter.
+    var nickname = localStorage.getItem('nickname');
+    if (!nickname) {
+      nickname = prompt("Enter your nickname:");
+      if (!nickname) nickname = "Anonymous";
+      localStorage.setItem('nickname', nickname);
+    }
+
+    var chat = document.getElementById('chat');
+    var input = document.getElementById('input');
+
+    // Append a message to the chat area
+    function appendMessage(sender, message) {
+      var div = document.createElement('div');
+      div.textContent = sender + ": " + message;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    // Listen for new messages. Gun’s map() method iterates over messages in the node.
+    messages.map().on(function(data) {
+      if (data) {
+        appendMessage(data.sender, data.message);
+      }
+    });
+
+    // Send a message when the user presses Enter.
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && input.value.trim() !== "") {
+        var msg = input.value.trim();
+        messages.set({
+          sender: nickname,
+          message: msg,
+          timestamp: Date.now()
+        });
+        input.value = "";
+      }
+    });
+  </script>
+</body>
+</html>
