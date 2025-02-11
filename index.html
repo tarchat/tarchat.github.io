@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>tChat: decentralized & FOSS</title>
+  <title>tChat: decentralized FOSS chat</title>
   <style>
     /* Terminal look styling */
     body {
@@ -39,27 +39,53 @@
       color: #00ff00;
       font-size: 16px;
     }
+    /* Clear Chat button styling */
+    #clearButton {
+      background-color: #222;
+      color: #00ff00;
+      border: 1px solid #00ff00;
+      padding: 5px 10px;
+      margin: 10px;
+      cursor: pointer;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    #clearButton:hover {
+      background-color: #333;
+    }
   </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-FC4WPSN2CG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  
+    gtag('config', 'G-FC4WPSN2CG');
+  </script>
   <!-- Include Gun.js from a CDN -->
   <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
 </head>
 <body>
+  <!-- Clear Chat Button -->
+  <button id="clearButton">Clear Chat</button>
+  <!-- Chat messages will appear here -->
   <div id="chat"></div>
+  <!-- Input area with a terminal prompt -->
   <div id="input-area">
     <span>&gt;</span>
     <input type="text" id="input" autocomplete="off" placeholder="Type a message...">
   </div>
 
   <script>
-    // Initialize Gun with an explicit peer.
+    // Initialize Gun with an explicit relay peer for better reliability.
     var gun = Gun({
       peers: ['https://gun-manhattan.herokuapp.com/gun']
     });
 
-    // Create/get a Gun node for our chat room.
+    // Get the chat room node.
     var messages = gun.get('chat-room');
 
-    // Ask for a nickname; store it in localStorage so users aren’t prompted repeatedly.
+    // Ask for a nickname; store it in localStorage so users don’t have to reenter.
     var nickname = localStorage.getItem('nickname');
     if (!nickname) {
       nickname = prompt("Enter your nickname:") || "Anonymous";
@@ -68,8 +94,9 @@
 
     var chat = document.getElementById('chat');
     var input = document.getElementById('input');
+    var clearButton = document.getElementById('clearButton');
 
-    // Append a message to the chat area.
+    // Append a message to the chat display.
     function appendMessage(sender, message) {
       var div = document.createElement('div');
       div.textContent = sender + ": " + message;
@@ -84,7 +111,7 @@
       }
     });
 
-    // Send a message when the user presses Enter.
+    // Send message when the user presses Enter.
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && input.value.trim() !== "") {
         var msg = input.value.trim();
@@ -94,6 +121,20 @@
           timestamp: Date.now()
         });
         input.value = "";
+      }
+    });
+
+    // Clear Chat Button: remove all messages from Gun and clear the chat window.
+    clearButton.addEventListener('click', function() {
+      if (confirm("Are you sure you want to clear the chat for everyone?")) {
+        // Remove messages from the Gun database.
+        messages.map().once(function(data, key) {
+          if (key) {
+            messages.get(key).put(null);
+          }
+        });
+        // Clear the chat display.
+        chat.innerHTML = "";
       }
     });
   </script>
