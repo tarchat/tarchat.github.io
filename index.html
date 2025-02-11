@@ -96,18 +96,23 @@
     var input = document.getElementById('input');
     var clearButton = document.getElementById('clearButton');
 
-    // Append a message to the chat display.
-    function appendMessage(sender, message) {
+    // Object to track already displayed messages to avoid duplicates.
+    var displayedMessages = {};
+
+    // Append a message to the chat display with a formatted timestamp.
+    function appendMessage(sender, message, timestamp) {
       var div = document.createElement('div');
-      div.textContent = sender + ": " + message;
+      var timeStr = new Date(timestamp).toLocaleTimeString();
+      div.textContent = "[" + timeStr + "] " + sender + ": " + message;
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
     }
 
-    // Listen for new messages.
-    messages.map().on(function(data) {
-      if (data) {
-        appendMessage(data.sender, data.message);
+    // Listen for new messages. The 'key' parameter is used to filter out duplicates.
+    messages.map().on(function(data, key) {
+      if (data && !displayedMessages[key]) {
+        displayedMessages[key] = true;
+        appendMessage(data.sender, data.message, data.timestamp);
       }
     });
 
@@ -133,8 +138,9 @@
             messages.get(key).put(null);
           }
         });
-        // Clear the chat display.
+        // Clear the chat display and the displayedMessages tracker.
         chat.innerHTML = "";
+        displayedMessages = {};
       }
     });
   </script>
